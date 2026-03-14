@@ -6,13 +6,13 @@
 
 enum ShadingLevel {
     //% block="One"
-    One=1,
+    One = 1,
     //% block="Two"
-    Two=2,
+    Two = 2,
     //% block="Three"
-    Three=3,
+    Three = 3,
     //% block="Four"
-    Four=4
+    Four = 4
 }
 
 /**
@@ -34,6 +34,7 @@ namespace imageEffects {
      */
     //% block="jitter $image radius $amount"
     //% image.shadow=screen_image_picker
+    //% group="Effects and Util"
     export function jitterImage(image: Image, amount: number) {
         amount = Math.round(amount)
         let tempImage = image.clone()
@@ -54,6 +55,7 @@ namespace imageEffects {
      */
     //% block="bulge/pinch $image amount $amount center x $cx y $cy"
     //% image.shadow=screen_image_picker
+    //% group="Effects and Util"
     export function bulgePinch(image: Image, amount: number, cx: number, cy: number, d?: number): Image {
         const src = image
         const out = image.clone()
@@ -101,6 +103,7 @@ namespace imageEffects {
      */
     //% block="melt $image min $min max $max"
     //% image.shadow=screen_image_picker
+    //% group="Effects and Util"
     export function meltImage(image: Image, min: number, max: number, backward?: boolean) {
         let tempImage = image.clone()
         for (let tx = 0; tx < image.width; tx++) {
@@ -121,6 +124,7 @@ namespace imageEffects {
      * For blocks. Gets current shading image.
      */
     //% block="shading image"
+    //% group="Effects and Util"
     export function blocksGetShadingImage() {
         return shadingImage
     }
@@ -130,12 +134,19 @@ namespace imageEffects {
      */
     //% block="set shading image to $newImage"
     //% newImage.shadow=screen_image_picker
+    //% group="Effects and Util"
     export function blocksSetShadingImage(newImage: Image) {
         shadingImage = newImage.clone()
     }
 
-
-    function paletteRowToBuffer(row: number): Buffer {
+    /**
+     * Returns a colorramp buffer from a 16x5 image.
+     * @param i image to use
+     * @param row row to convert
+     */
+    //% block="convert 16x5 image $i row $row to buffer"
+    //% group="Effects and Util"
+    export function paletteRowToBuffer(i: Image, row: number): Buffer {
         // clamp row to 0–4 just in case
         row = Math.constrain(row, 0, shadingImage.height - 1)
 
@@ -159,6 +170,7 @@ namespace imageEffects {
      */
     //% block="shade area in $target left top $left $top width $width height $height with shade $shadeLevel"
     //% target.shadow=screen_image_picker
+    //% group="Effects and Util"
     export function shadeRect(
         target: Image,
         left: number,
@@ -168,7 +180,7 @@ namespace imageEffects {
         shadeLevel: ShadingLevel
     ): Image {
         const out = target.clone()
-        const colormap = paletteRowToBuffer(shadeLevel)
+        const colormap = paletteRowToBuffer(shadingImage, shadeLevel)
 
         out.mapRect(left, top, width, height, colormap)
 
@@ -183,9 +195,10 @@ namespace imageEffects {
      * @param mask mask Image
      * @param shadeLevel shading row/level (1-4)
      */
-    //% block="$target shaded corner $left $top using $mask shadelevel $shadeLevel"
+    //% block="$target shaded from corner $left $top using $mask shadelevel $shadeLevel"
     //% target.shadow=screen_image_picker
     //% mask.shadow=screen_image_picker
+    //% group="Effects and Util"
     export function shadeImage(
         target: Image,
         left: number,
@@ -226,6 +239,7 @@ namespace imageEffects {
     //% block="shade $target corner $left $top using $mask shadelevel $shadeLevel"
     //% target.shadow=screen_image_picker
     //% mask.shadow=screen_image_picker
+    //% group="Effects and Util"
     export function setShadeImage(
         target: Image,
         left: number,
@@ -261,6 +275,7 @@ namespace imageEffects {
     //% block="mask $input using $mask"
     //% input.shadow=screen_image_picker
     //% mask.shadow=screen_image_picker
+    //% group="Effects and Util"
     export function maskedImage(input: Image, mask: Image) {
         if (mask.width == input.width && mask.height == input.height) {
             let out = image.create(input.width, input.height)
@@ -272,5 +287,60 @@ namespace imageEffects {
             return out
         }
         return null
+    }
+
+    /**
+     * Returns an image repeated count times in the Y axis.
+     * @param i image to repeat
+     * @param c count
+     */
+    //% block="repeat $i along y axis $c times"
+    //% i.shadow=screen_image_picker
+    //% group="Block Wrappers"
+    export function imageRepeatY(i: Image, c: number) {
+        return image.repeatY(c, i)
+    }
+
+    /**
+     * Return an image from the image array provided concat along Y axis.
+     * @param i image array to concat
+     */
+    //% block="concat images $i along y axis"
+    //% i.shadow=lists_create_with
+    //% i.defl=screen_image_picker
+    //% group="Block Wrappers"
+    export function imageConcatY(i: Image[]) {
+        return image.concatY(i)
+    }
+
+    /**
+     * Gets the most appropriate font for the text provided
+     * @param text text to use
+     */
+    //% block="get font for text $text"
+    //% group="Block Wrappers"
+    export function imageGetFontForText(text: string) {
+        return image.getFontForText(text)
+    }
+
+    /**
+     * Scales a font object by provided size multiplier
+     * @param font font to scale
+     * @param s size multiplier
+     */
+    //% block="scale font $font by $s"
+    //% group="Block Wrappers"
+    export function imageScaledFont(font: image.Font, s: number) {
+        return image.scaledFont(font, s)
+    }
+
+    /**
+     * Returns a revision number, which changes every time the image changes
+     * @param i image
+     */
+    //% block="$i revision #"
+    //% group="Block Wrappers"
+    export function imageRevision(i: Image) {
+        return i.revision()
     }
 }
