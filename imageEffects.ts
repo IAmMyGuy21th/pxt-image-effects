@@ -4,6 +4,17 @@
 * Read more at https://arcade.makecode.com/blocks/custom
 */
 
+enum ShadingLevel {
+    //% block="One"
+    One=1,
+    //% block="Two"
+    Two=2,
+    //% block="Three"
+    Three=3,
+    //% block="Four"
+    Four=4
+}
+
 /**
  * Custom blocks
  */
@@ -39,13 +50,14 @@ namespace imageEffects {
      * @param amount amount to bulge/pinch
      * @param cx origin x
      * @param cy origin y
+     * @param d optional if you want to change radius
      */
     //% block="bulge/pinch $image amount $amount center x $cx y $cy"
     //% image.shadow=screen_image_picker
-    export function bulgePinch(image: Image, amount: number, cx: number, cy: number, r?: number): Image {
+    export function bulgePinch(image: Image, amount: number, cx: number, cy: number, d?: number): Image {
         const src = image
         const out = image.clone()
-        const maxR = r ? r : Math.max(src.width, src.height) / 2
+        const maxR = d ? d : Math.max(src.width, src.height) / 2
 
         for (let x = 0; x < src.width; x++) {
             for (let y = 0; y < src.height; y++) {
@@ -153,7 +165,7 @@ namespace imageEffects {
         top: number,
         width: number,
         height: number,
-        shadeLevel: number
+        shadeLevel: ShadingLevel
     ): Image {
         const out = target.clone()
         const colormap = paletteRowToBuffer(shadeLevel)
@@ -164,14 +176,14 @@ namespace imageEffects {
     }
 
     /**
-     * Shades an area in target where mask is non-transparent
+     * shades an area in target where mask is non-transparent and returns output
      * @param target image
      * @param left left coord
      * @param top top coord
      * @param mask mask Image
      * @param shadeLevel shading row/level (1-4)
      */
-    //% block="shade $target corner $left $top using $mask shadelevel $shadeLevel"
+    //% block="$target shaded corner $left $top using $mask shadelevel $shadeLevel"
     //% target.shadow=screen_image_picker
     //% mask.shadow=screen_image_picker
     export function shadeImage(
@@ -179,7 +191,7 @@ namespace imageEffects {
         left: number,
         top: number,
         mask: Image,
-        shadeLevel: number
+        shadeLevel: ShadingLevel
     ): Image {
         const out = target.clone()
         const row = Math.constrain(shadeLevel, 0, shadingImage.height - 1)
@@ -201,6 +213,43 @@ namespace imageEffects {
         }
 
         return out
+    }
+
+    /**
+     * Shades an area in target where mask is non-transparent
+     * @param target image
+     * @param left left coord
+     * @param top top coord
+     * @param mask mask Image
+     * @param shadeLevel shading row/level (1-4)
+     */
+    //% block="shade $target corner $left $top using $mask shadelevel $shadeLevel"
+    //% target.shadow=screen_image_picker
+    //% mask.shadow=screen_image_picker
+    export function setShadeImage(
+        target: Image,
+        left: number,
+        top: number,
+        mask: Image,
+        shadeLevel: ShadingLevel
+    ) {
+        const row = Math.constrain(shadeLevel, 0, shadingImage.height - 1)
+
+        for (let mx = 0; mx < mask.width; mx++) {
+            const tx = left + mx
+            if (tx < 0 || tx >= target.width) continue
+
+            for (let my = 0; my < mask.height; my++) {
+                const ty = top + my
+                if (ty < 0 || ty >= target.height) continue
+
+                if (mask.getPixel(mx, my)) {
+                    const c = target.getPixel(tx, ty)
+                    const shaded = shadingImage.getPixel(c, row)
+                    target.setPixel(tx, ty, shaded)
+                }
+            }
+        }
     }
 
 
