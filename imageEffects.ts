@@ -375,16 +375,16 @@ namespace imageEffects {
      * @param input image to mask
      * @param mask mask image to use
      */
-    //% block="$input masked using $mask"
+    //% block="$input masked using $mask pos $x $y"
     //% input.shadow=screen_image_picker
     //% mask.shadow=screen_image_picker
     //% group="Effects and Util Reporters"
-    export function maskedImage(input: Image, mask: Image) {
+    export function maskedImage(input: Image, mask: Image, x: number, y: number) {
         if (mask.width == input.width && mask.height == input.height) {
             let out = image.create(input.width, input.height)
             for (let tx = 0; tx < input.width; tx++) {
                 for (let ty = 0; ty < input.height; ty++) {
-                    out.setPixel(tx, ty, mask.getPixel(tx, ty) > 0 ? input.getPixel(tx, ty) : 0)
+                    out.setPixel(tx+x, ty+y, mask.getPixel(tx, ty) > 0 ? input.getPixel(tx+x, ty+y) : 0)
                 }
             }
             return out
@@ -397,15 +397,15 @@ namespace imageEffects {
      * @param input image to mask
      * @param mask mask image to use
      */
-    //% block="mask $input using $mask"
+    //% block="mask $input using $mask pos $x $y"
     //% input.shadow=screen_image_picker
     //% mask.shadow=screen_image_picker
     //% group="Effects and Util"
-    export function setMaskedImage(input: Image, mask: Image) {
+    export function setMaskedImage(input: Image, mask: Image, x: number, y: number) {
         if (mask.width == input.width && mask.height == input.height) {
             for (let tx = 0; tx < input.width; tx++) {
                 for (let ty = 0; ty < input.height; ty++) {
-                    input.setPixel(tx, ty, mask.getPixel(tx, ty) > 0 ? input.getPixel(tx, ty) : 0)
+                    input.setPixel(tx+x, ty+y, mask.getPixel(tx, ty) > 0 ? input.getPixel(tx+x, ty+y) : 0)
                 }
             }
         }
