@@ -12,7 +12,7 @@ enum ShadingLevel {
     //% block="Three"
     Three = 3,
     //% block="Four"
-    Four = 4
+    Four = 4,
 }
 
 /**
@@ -20,6 +20,11 @@ enum ShadingLevel {
  */
 //% weight=100 color=#339999 icon="" advanced=true
 namespace imageEffects {
+    //% block="shade $shade"
+    //% group="Helpers"
+    //% blockId="shading_level"
+    export function blocksShadeLevel(shade: ShadingLevel) { return shade }
+
     //% block="shading image"
     //% group="Helpers"
     export let shadingImage = img`
@@ -254,13 +259,14 @@ namespace imageEffects {
     //% block="$target shaded in rectangle left top $left $top width $width height $height with shade $shadeLevel"
     //% target.shadow=screen_image_picker
     //% group="Effects and Util Reporters"
+    //% shadeLevel.defl=shading_level
     export function shadeRect(
         target: Image,
         left: number,
         top: number,
         width: number,
         height: number,
-        shadeLevel: ShadingLevel
+        shadeLevel: number
     ): Image {
         const out = target.clone()
         const colormap = paletteRowToBuffer(shadeLevel)
@@ -282,13 +288,14 @@ namespace imageEffects {
     //% block="shade area in $target left top $left $top width $width height $height with shade $shadeLevel"
     //% target.shadow=screen_image_picker
     //% group="Effects and Util"
+    //% shadeLevel.defl=shading_level
     export function setShadeRect(
         target: Image,
         left: number,
         top: number,
         width: number,
         height: number,
-        shadeLevel: ShadingLevel
+        shadeLevel: number
     ) {
         const colormap = paletteRowToBuffer(shadeLevel)
         target.mapRect(left, top, width, height, colormap)
@@ -311,7 +318,7 @@ namespace imageEffects {
         left: number,
         top: number,
         mask: Image,
-        shadeLevel: ShadingLevel
+        shadeLevel: number
     ): Image {
         const out = target.clone()
         const row = Math.constrain(shadeLevel, 0, shadingImage.height - 1)
@@ -347,12 +354,13 @@ namespace imageEffects {
     //% target.shadow=screen_image_picker
     //% mask.shadow=screen_image_picker
     //% group="Effects and Util"
+    //% shadeLevel.defl=shading_level
     export function setShadeImage(
         target: Image,
         left: number,
         top: number,
         mask: Image,
-        shadeLevel: ShadingLevel
+        shadeLevel: number
     ) {
         const row = Math.constrain(shadeLevel, 0, shadingImage.height - 1)
 
@@ -385,13 +393,13 @@ namespace imageEffects {
     //% group="Effects and Util Reporters"
     export function maskedImage(input: Image, mask: Image, x: number, y: number) {
         //if (mask.width == input.width && mask.height == input.height) {
-            let out = image.create(input.width, input.height)
-            for (let tx = 0; tx < input.width; tx++) {
-                for (let ty = 0; ty < input.height; ty++) {
-                    out.setPixel(tx, ty, mask.getPixel(tx-x, ty-y) > 0 ? input.getPixel(tx, ty) : 0)
-                }
+        let out = image.create(input.width, input.height)
+        for (let tx = 0; tx < input.width; tx++) {
+            for (let ty = 0; ty < input.height; ty++) {
+                out.setPixel(tx, ty, mask.getPixel(tx - x, ty - y) > 0 ? input.getPixel(tx, ty) : 0)
             }
-            return out
+        }
+        return out
         //}
     }
 
@@ -406,11 +414,11 @@ namespace imageEffects {
     //% group="Effects and Util"
     export function setMaskedImage(input: Image, mask: Image, x: number, y: number) {
         //if (mask.width == input.width && mask.height == input.height) {
-            for (let tx = 0; tx < input.width; tx++) {
-                for (let ty = 0; ty < input.height; ty++) {
-                    input.setPixel(tx, ty, mask.getPixel(tx-x, ty-y) > 0 ? input.getPixel(tx, ty) : 0)
-                }
+        for (let tx = 0; tx < input.width; tx++) {
+            for (let ty = 0; ty < input.height; ty++) {
+                input.setPixel(tx, ty, mask.getPixel(tx - x, ty - y) > 0 ? input.getPixel(tx, ty) : 0)
             }
+        }
         //}
     }
 }
