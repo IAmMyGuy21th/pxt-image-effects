@@ -8,12 +8,12 @@
         "main.blocks",
         "main.ts",
         "README.md",
-        "assets.json",
         "imageEffects.ts",
         "images.g.jres",
         "images.g.ts"
     ],
     "testFiles": [
+        "assets.json",
         "test.ts"
     ],
     "targetVersions": {
