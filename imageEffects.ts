@@ -402,9 +402,9 @@ namespace imageEffects {
     //% group="Effects and Util"
     export function setMaskedImage(input: Image, mask: Image, x: number, y: number) {
         //if (mask.width == input.width && mask.height == input.height) {
-            for (let tx = 0; tx < mask.width; tx++) {
-                for (let ty = 0; ty < mask.height; ty++) {
-                    input.setPixel(tx+x, ty+y, mask.getPixel(tx, ty) > 0 ? input.getPixel(tx+x, ty+y) : 0)
+            for (let tx = 0; tx < input.width; tx++) {
+                for (let ty = 0; ty < input.height; ty++) {
+                    input.setPixel(tx, ty, mask.getPixel(tx-x, ty-y) > 0 ? input.getPixel(tx, ty) : 0)
                 }
             }
         //}
