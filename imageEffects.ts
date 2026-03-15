@@ -72,14 +72,16 @@ namespace imageEffects {
      * @param amount amount to bulge/pinch
      * @param cx origin x
      * @param cy origin y
-     * @param d optional if you want to change radius
+     * @param r optional if you want to change radius
      */
     //% block="bulge/pinch $image amount $amount center x $cx y $cy"
     //% image.shadow=screen_image_picker
     //% group="Effects and Util"
-    export function setBulgePinch(image: Image, amount: number, cx: number, cy: number, d?: number) {
+    //% expandableArgumentMode="toggle"
+    //% expandableArgument="r"
+    export function setBulgePinch(image: Image, amount: number, cx: number, cy: number, r?: number) {
         const src = image.clone()
-        const maxR = d ? d : Math.max(src.width, src.height) / 2
+        const maxR = r ? r : Math.max(src.width, src.height) / 2
 
         for (let x = 0; x < src.width; x++) {
             for (let y = 0; y < src.height; y++) {
@@ -120,15 +122,17 @@ namespace imageEffects {
      * @param amount amount to bulge/pinch
      * @param cx origin x
      * @param cy origin y
-     * @param d optional if you want to change radius
+     * @param r optional if you want to change radius
      */
     //% block="$image bulge/pinch by amount $amount center x $cx y $cy"
     //% image.shadow=screen_image_picker
     //% group="Effects and Util Reporters"
-    export function bulgePinch(image: Image, amount: number, cx: number, cy: number, d?: number): Image {
+    //% expandableArgumentMode="toggle"
+    //% expandableArgument="r"
+    export function bulgePinch(image: Image, amount: number, cx: number, cy: number, r?: number): Image {
         const src = image.clone()
         const out = image.clone()
-        const maxR = d ? d : Math.max(src.width, src.height) / 2
+        const maxR = r ? r : Math.max(src.width, src.height) / 2
 
         for (let x = 0; x < src.width; x++) {
             for (let y = 0; y < src.height; y++) {
