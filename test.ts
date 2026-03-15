@@ -33,23 +33,24 @@ game.setDialogFrame(imageEffects.shadeRect(img`
 game.setDialogFont(image.font12)
 game.setDialogTextColor(12)
 game.setDialogCursor(img`
-    . . 7 7 7 7 7 7 7 7 7 7 7 7 7 . .
-    . 7 6 6 6 6 6 6 6 6 6 6 6 6 6 7 .
-    7 6 . . . . . . . . . . . . . 6 7
-    7 . . . . . . . . . . . . . . . 7
-    7 . . . . . . . . . . . . . . . 7
-    7 . . . 7 . . . . . . . 7 . . . 7
-    7 . . 7 6 7 . . . . . . 7 7 . . 7
-    7 . 7 6 . 6 7 . 7 7 7 7 7 7 7 . 7
-    7 . 7 7 7 7 7 . 6 6 6 6 7 7 6 . 7
-    7 . 7 6 6 6 7 . . . . . 7 6 . . 7
-    7 . 6 . . . 6 . . . . . 6 . . . 7
-    7 . . . . . . . . . . . . . . . 7
-    7 . . . . . . . . . . . . . . . 7
-    7 . . . . . . . . . . . . . . . 7
-    6 7 . . . . . . . . . . . . . 7 6
-    . 6 7 7 7 7 7 7 7 7 7 7 7 7 7 6 .
-    . . 6 6 6 6 6 6 6 6 6 6 6 6 6 . .
+    ..7777777777777..
+    .766666666666667.
+    76bbbbbbbbbbbbb67
+    7bbbbbbbbbbbbbbb7
+    7bbbbbbbbbbbbbbb7
+    7bbb5bbbbbbb5bbb7
+    7bb545bbbbbb55bb7
+    7b54c45b5555555b7
+    7b55555b4444554b7
+    7b54445bcccc54cb7
+    7b4ccc4bbbbb4cbb7
+    7bcbbbcbbbbbcbbb7
+    7bbbbbbbbbbbbbbb7
+    7bbbbbbbbbbbbbbb7
+    67bbbbbbbbbbbbb76
+    b677777777777776b
+    .b6666666666666b.
+    ..bbbbbbbbbbbbb..
 `)
 game.showLongText(`Try these effects out! You can even combine them.`, DialogLayout.Center)
 
@@ -64,9 +65,9 @@ let cursor=sprites.create(img`
 `,SpriteKind.Player)
 cursor.setFlag(SpriteFlag.StayInScreen,true)
 text.top=0
-const orig = assets.image`orig`
+let orig = assets.image`orig`
 let effectAmount=2
-let bulgeRadius=40
+let radius=40
 forever(function() {
     if (mode == 0) {
         text.image.fill(0)
@@ -74,16 +75,18 @@ forever(function() {
         text.image.print("menu: mode, Arrows: move", 1, 1, 1, image.font8)
         text.image.print("a/b: radius", 1, 10, 1, image.font8)
         text.image.print("negative effect", 1, 20, 1, image.font8)
-        scene.setBackgroundImage(imageEffects.bulgePinch(orig, -3, cursor.x, cursor.y, bulgeRadius))
+        orig = assets.image`orig`
+        imageEffects.setBulgePinch(orig, -3, cursor.x, cursor.y, radius)
+        scene.setBackgroundImage(orig)
         controller.moveSprite(cursor, 100, 100)
         cursor.setFlag(SpriteFlag.Invisible, false)
         if (controller.A.isPressed()) {
-            bulgeRadius++
+            radius++
         }
         if (controller.B.isPressed()) {
-            bulgeRadius--
+            radius--
         }
-        bulgeRadius = Math.constrain(bulgeRadius, 1, 160)
+        radius = Math.constrain(radius, 1, 160)
     }
     if (mode == 1) {
         text.image.fill(0)
@@ -91,16 +94,18 @@ forever(function() {
         text.image.print("menu: mode, Arrows: move", 1, 1, 1, image.font8)
         text.image.print("a/b: radius", 1, 10, 1, image.font8)
         text.image.print("positive effect", 1, 20, 1, image.font8)
-        scene.setBackgroundImage(imageEffects.bulgePinch(orig, 3, cursor.x, cursor.y, bulgeRadius))
+        orig=assets.image`orig`
+        imageEffects.setBulgePinch(orig, 3, cursor.x, cursor.y, radius)
+        scene.setBackgroundImage(orig)
         controller.moveSprite(cursor, 100, 100)
         cursor.setFlag(SpriteFlag.Invisible, false)
         if (controller.A.isPressed()) {
-            bulgeRadius++
+            radius++
         }
         if (controller.B.isPressed()) {
-            bulgeRadius--
+            radius--
         }
-        bulgeRadius = Math.constrain(bulgeRadius, 1, 160)
+        radius = Math.constrain(radius, 1, 160)
     } else if (mode==2) {
         text.image.fill(0)
         text.image.fillRect(0, 0, 160, 20, 15)
@@ -108,7 +113,9 @@ forever(function() {
         text.image.print(`jitter: ${effectAmount}`, 1, 10, 1, image.font8)
         controller.moveSprite(cursor, 0, 0)
         cursor.setFlag(SpriteFlag.Invisible, true)
-        scene.setBackgroundImage(imageEffects.jitterImage(orig, effectAmount))
+        orig=assets.image`orig`
+        imageEffects.jitterImage(orig, effectAmount)
+        scene.setBackgroundImage(orig)
     } else if (mode==3) {
         text.image.fill(0)
         text.image.fillRect(0, 0, 160, 20, 15)
@@ -116,14 +123,18 @@ forever(function() {
         text.image.print(`melt: ${effectAmount}`, 1, 10, 1, image.font8)
         controller.moveSprite(cursor, 0, 0)
         cursor.setFlag(SpriteFlag.Invisible, true)
-        scene.setBackgroundImage(imageEffects.meltImage(orig, 0, effectAmount))
+        orig = assets.image`orig`
+        imageEffects.setMeltImage(orig, 0, effectAmount)
+        scene.setBackgroundImage(orig)
     } else if (mode==4) {
         text.image.fill(0)
         text.image.fillRect(0, 0, 160, 10, 15)
         text.image.print("menu: mode, arrows: move", 1, 1, 1, image.font8)
         controller.moveSprite(cursor, 100, 100)
         cursor.setFlag(SpriteFlag.Invisible, false)
-        scene.setBackgroundImage(imageEffects.shadeImage(orig, cursor.x-44,cursor.y-44,assets.image`shadeimage`,1))
+        orig=assets.image`orig`
+        imageEffects.setShadeImage(orig, cursor.x - 44, cursor.y - 44, assets.image`shadeimage`, 1)
+        scene.setBackgroundImage(orig)
     }
 })
 controller.menu.onEvent(ControllerButtonEvent.Pressed, function() {

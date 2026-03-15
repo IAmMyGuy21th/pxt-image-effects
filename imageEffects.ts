@@ -16,10 +16,12 @@ enum ShadingLevel {
 }
 
 /**
- * Custom blocks
+ * Image effects. Try not to use the reporter versions much because it creates a new image each time (low memory)
  */
 //% weight=100 color=#339999 icon="" advanced=true
 namespace imageEffects {
+    //% block="shading image"
+    //% group="Helpers"
     export let shadingImage = img`
         . 1 2 3 4 5 6 7 8 9 a b c d e f
         . d e b e 4 8 6 c 6 c c f b c f
@@ -27,6 +29,25 @@ namespace imageEffects {
         . c f f f c f c f c f f f f f f
         . f f f f f f f f f f f f f f f
     `
+    /**
+     * Goes through every pixel in an image and jitters it by amount then returns output
+     * @param image image to jitter
+     * @param amount jitter amount in pixels
+     */
+    //% block="$image jittered with radius $amount"
+    //% image.shadow=screen_image_picker
+    //% group="Effects and Util Reporters"
+    export function jitteredImage(image: Image, amount: number) {
+        amount = Math.round(amount)
+        let tempImage = image.clone()
+        for (let tx = 0; tx < image.width; tx++) {
+            for (let ty = 0; ty < image.height; ty++) {
+                tempImage.setPixel(tx, ty, image.getPixel(Math.constrain(Math.randomRange(-amount, amount) + tx, 0, image.width - 1), Math.constrain(Math.randomRange(-amount, amount) + ty, 0, image.height - 1)))
+            }
+        }
+        return tempImage.clone()
+    }
+
     /**
      * Goes through every pixel in an image and jitters it by amount
      * @param image image to jitter
@@ -37,14 +58,14 @@ namespace imageEffects {
     //% group="Effects and Util"
     export function jitterImage(image: Image, amount: number) {
         amount = Math.round(amount)
-        let tempImage = image.clone()
+        let tempimg = image.clone()
         for (let tx = 0; tx < image.width; tx++) {
             for (let ty = 0; ty < image.height; ty++) {
-                tempImage.setPixel(tx, ty, image.getPixel(Math.constrain(Math.randomRange(-amount, amount) + tx, 0, image.width - 1), Math.constrain(Math.randomRange(-amount, amount) + ty, 0, image.height - 1)))
+                image.setPixel(tx, ty, tempimg.getPixel(Math.constrain(Math.randomRange(-amount, amount) + tx, 0, image.width - 1), Math.constrain(Math.randomRange(-amount, amount) + ty, 0, image.height - 1)))
             }
         }
-        return tempImage.clone()
     }
+
     /**
      * Bulges or pinches an image from given coords by amount
      * @param image image to bulge/pinch
@@ -56,8 +77,56 @@ namespace imageEffects {
     //% block="bulge/pinch $image amount $amount center x $cx y $cy"
     //% image.shadow=screen_image_picker
     //% group="Effects and Util"
+    export function setBulgePinch(image: Image, amount: number, cx: number, cy: number, d?: number) {
+        const src = image.clone()
+        const maxR = d ? d : Math.max(src.width, src.height) / 2
+
+        for (let x = 0; x < src.width; x++) {
+            for (let y = 0; y < src.height; y++) {
+
+                // distance from center
+                const dx = x - cx
+                const dy = y - cy
+                const dist = Math.sqrt(dx * dx + dy * dy)
+
+                // normalize 0–1
+                const r = dist / maxR
+                if (r > 1) {
+                    // outside effect radius → copy pixel unchanged
+                    image.setPixel(x, y, src.getPixel(x, y))
+                    continue
+                }
+
+                // bulge/pinch curve
+                // amount > 0 = bulge, amount < 0 = pinch
+                const factor = 1 + amount * (1 - r * r)
+
+                // compute source coords
+                const sx = cx + dx * factor
+                const sy = cy + dy * factor
+
+                // clamp using Math.constrain
+                const csx = Math.constrain(Math.round(sx), 0, src.width - 1)
+                const csy = Math.constrain(Math.round(sy), 0, src.height - 1)
+
+                image.setPixel(x, y, src.getPixel(csx, csy))
+            }
+        }
+    }
+
+    /**
+     * Returns a deformed image bulged or pinched from given coords by amount
+     * @param image image to bulge/pinch
+     * @param amount amount to bulge/pinch
+     * @param cx origin x
+     * @param cy origin y
+     * @param d optional if you want to change radius
+     */
+    //% block="$image bulge/pinch by amount $amount center x $cx y $cy"
+    //% image.shadow=screen_image_picker
+    //% group="Effects and Util Reporters"
     export function bulgePinch(image: Image, amount: number, cx: number, cy: number, d?: number): Image {
-        const src = image
+        const src = image.clone()
         const out = image.clone()
         const maxR = d ? d : Math.max(src.width, src.height) / 2
 
@@ -95,16 +164,40 @@ namespace imageEffects {
 
         return out
     }
+
     /**
      * Melt effect on image
      * @param image image to jitter
      * @param min minimum to melt
      * @param max maximum to melt
      */
-    //% block="melt $image min $min max $max"
+    //% block="melt $image min $min max $max backward? $backward"
     //% image.shadow=screen_image_picker
     //% group="Effects and Util"
-    export function meltImage(image: Image, min: number, max: number, backward?: boolean) {
+    export function setMeltImage(image: Image, min: number, max: number, backward?: boolean) {
+        for (let tx = 0; tx < image.width; tx++) {
+            if (backward) {
+                for (let ty = 0; ty < image.height; ty++) {
+                    image.drawLine(tx, ty, tx, Math.randomRange(min, max) + ty, image.getPixel(tx, ty))
+                }
+            } else {
+                for (let ty = image.height - 1; ty >= 0; ty--) {
+                    image.drawLine(tx, ty, tx, Math.randomRange(min, max) + ty, image.getPixel(tx, ty))
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns melted version of image
+     * @param image image to jitter
+     * @param min minimum to melt
+     * @param max maximum to melt
+     */
+    //% block="$image melted random min $min max $max backward? $backward"
+    //% image.shadow=screen_image_picker
+    //% group="Effects and Util Reporters"
+    export function meltedImage(image: Image, min: number, max: number, backward?: boolean) {
         let tempImage = image.clone()
         for (let tx = 0; tx < image.width; tx++) {
             if (backward) {
@@ -121,32 +214,18 @@ namespace imageEffects {
     }
 
     /**
-     * For blocks. Gets current shading image.
-     */
-    //% block="shading image"
-    //% group="Effects and Util"
-    export function blocksGetShadingImage() {
-        return shadingImage
-    }
-
-    /**
      * For blocks. Sets current shading image. Should be 16 pixels wide, with unshaded colors in order at the top.
      */
     //% block="set shading image to $newImage"
     //% newImage.shadow=screen_image_picker
-    //% group="Effects and Util"
+    //% group="Helpers"
     export function blocksSetShadingImage(newImage: Image) {
         shadingImage = newImage.clone()
     }
 
-    /**
-     * Returns a colorramp buffer from a 16x5 image.
-     * @param i image to use
-     * @param row row to convert
-     */
-    //% block="convert 16x5 image $i row $row to buffer"
-    //% group="Effects and Util"
-    export function paletteRowToBuffer(i: Image, row: number): Buffer {
+    //% block="convert shading image to Buffer row: $row"
+    //% group="Helpers"
+    export function paletteRowToBuffer(row: number): Buffer {
         // clamp row to 0–4 just in case
         row = Math.constrain(row, 0, shadingImage.height - 1)
 
@@ -160,6 +239,34 @@ namespace imageEffects {
 
 
     /**
+     * Returns target shaded in rectangle using current shading image
+     * @param target image to shade
+     * @param left left of rect
+     * @param top top of rect
+     * @param width rect width
+     * @param height rect height
+     * @param shadeLevel how much to shade (row in shadingImage)
+     */
+    //% block="$target shaded in rectangle left top $left $top width $width height $height with shade $shadeLevel"
+    //% target.shadow=screen_image_picker
+    //% group="Effects and Util Reporters"
+    export function shadeRect(
+        target: Image,
+        left: number,
+        top: number,
+        width: number,
+        height: number,
+        shadeLevel: ShadingLevel
+    ): Image {
+        const out = target.clone()
+        const colormap = paletteRowToBuffer(shadeLevel)
+
+        out.mapRect(left, top, width, height, colormap)
+
+        return out
+    }
+
+    /**
      * Shades a rectangular area in target using current shading image
      * @param target image to shade
      * @param left left of rect
@@ -171,24 +278,20 @@ namespace imageEffects {
     //% block="shade area in $target left top $left $top width $width height $height with shade $shadeLevel"
     //% target.shadow=screen_image_picker
     //% group="Effects and Util"
-    export function shadeRect(
+    export function setShadeRect(
         target: Image,
         left: number,
         top: number,
         width: number,
         height: number,
         shadeLevel: ShadingLevel
-    ): Image {
-        const out = target.clone()
-        const colormap = paletteRowToBuffer(shadingImage, shadeLevel)
-
-        out.mapRect(left, top, width, height, colormap)
-
-        return out
+    ) {
+        const colormap = paletteRowToBuffer(shadeLevel)
+        target.mapRect(left, top, width, height, colormap)
     }
 
     /**
-     * shades an area in target where mask is non-transparent and returns output
+     * Returns target shaded where mask is non-transparent
      * @param target image
      * @param left left coord
      * @param top top coord
@@ -198,7 +301,7 @@ namespace imageEffects {
     //% block="$target shaded from corner $left $top using $mask shadelevel $shadeLevel"
     //% target.shadow=screen_image_picker
     //% mask.shadow=screen_image_picker
-    //% group="Effects and Util"
+    //% group="Effects and Util Reporters"
     export function shadeImage(
         target: Image,
         left: number,
@@ -268,14 +371,14 @@ namespace imageEffects {
 
 
     /**
-     * Masks an image using provided mask, showing areas where mask image is non-transparent
+     * Returns a masked image using provided mask, showing areas where mask image is non-transparent
      * @param input image to mask
      * @param mask mask image to use
      */
-    //% block="mask $input using $mask"
+    //% block="$input masked using $mask"
     //% input.shadow=screen_image_picker
     //% mask.shadow=screen_image_picker
-    //% group="Effects and Util"
+    //% group="Effects and Util Reporters"
     export function maskedImage(input: Image, mask: Image) {
         if (mask.width == input.width && mask.height == input.height) {
             let out = image.create(input.width, input.height)
@@ -289,6 +392,31 @@ namespace imageEffects {
         return null
     }
 
+    /**
+     * Masks an image using provided mask, showing areas where mask image is non-transparent
+     * @param input image to mask
+     * @param mask mask image to use
+     */
+    //% block="mask $input using $mask"
+    //% input.shadow=screen_image_picker
+    //% mask.shadow=screen_image_picker
+    //% group="Effects and Util"
+    export function setMaskedImage(input: Image, mask: Image) {
+        if (mask.width == input.width && mask.height == input.height) {
+            for (let tx = 0; tx < input.width; tx++) {
+                for (let ty = 0; ty < input.height; ty++) {
+                    input.setPixel(tx, ty, mask.getPixel(tx, ty) > 0 ? input.getPixel(tx, ty) : 0)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Block wrappers and extras for image modifications.
+ */
+//% weight=95 color=#66bbbb icon="" advanced=true
+namespace imageExtras {
     /**
      * Returns an image repeated count times in the Y axis.
      * @param i image to repeat
@@ -313,6 +441,17 @@ namespace imageEffects {
         return image.concatY(i)
     }
 
+
+    //% block="font 5px"
+    //% group="Block Wrappers"
+    export const font5 = image.font5
+    //% block="font 8px"
+    //% group="Block Wrappers"
+    export const font8 = image.font8
+    //% block="font 12px"
+    //% group="Block Wrappers"
+    export const font12 = image.font12
+
     /**
      * Gets the most appropriate font for the text provided
      * @param text text to use
@@ -332,15 +471,5 @@ namespace imageEffects {
     //% group="Block Wrappers"
     export function imageScaledFont(font: image.Font, s: number) {
         return image.scaledFont(font, s)
-    }
-
-    /**
-     * Returns a revision number, which changes every time the image changes
-     * @param i image
-     */
-    //% block="$i revision #"
-    //% group="Block Wrappers"
-    export function imageRevision(i: Image) {
-        return i.revision()
     }
 }
