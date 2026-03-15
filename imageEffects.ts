@@ -74,7 +74,7 @@ namespace imageEffects {
      * @param cy origin y
      * @param r optional if you want to change radius
      */
-    //% block="bulge/pinch $image amount $amount center x $cx y $cy"
+    //% block="bulge/pinch $image amount $amount center x $cx y $cy radius $r"
     //% image.shadow=screen_image_picker
     //% group="Effects and Util"
     //% expandableArgumentMode="toggle"
@@ -124,7 +124,7 @@ namespace imageEffects {
      * @param cy origin y
      * @param r optional if you want to change radius
      */
-    //% block="$image bulge/pinch by amount $amount center x $cx y $cy"
+    //% block="$image bulge/pinch by amount $amount center x $cx y $cy radius $r"
     //% image.shadow=screen_image_picker
     //% group="Effects and Util Reporters"
     //% expandableArgumentMode="toggle"
